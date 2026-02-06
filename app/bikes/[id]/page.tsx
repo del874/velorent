@@ -13,8 +13,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { locations } from '@/data/bikes';
 import { useStore } from '@/context/store-context';
 import { useAuth } from '@/context/auth-context';
-import { getBike, createBooking } from '@/lib/api';
+import { getBike, createBooking, getBookedDates } from '@/lib/api';
 import { Bike } from '@/types';
+
+interface BookedDate {
+  startDate: string;
+  endDate: string;
+}
 
 export default function BikeDetailPage() {
   const router = useRouter();
@@ -22,6 +27,7 @@ export default function BikeDetailPage() {
   const { cart, addToCart, updateCartDates, updateCartLocation, clearCart } = useStore();
   const { user } = useAuth();
   const [bike, setBike] = useState<Bike | null>(null);
+  const [bookedDates, setBookedDates] = useState<BookedDate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [startDate, setStartDate] = useState('');
@@ -31,15 +37,20 @@ export default function BikeDetailPage() {
   const [customerEmail, setCustomerEmail] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [dateConflict, setDateConflict] = useState(false);
 
   useEffect(() => {
-    async function fetchBike() {
+    async function fetchData() {
       try {
         setLoading(true);
         setError(null);
         const id = params.id as string;
-        const data = await getBike(id);
-        setBike(data);
+        const [bikeData, bookedData] = await Promise.all([
+          getBike(id),
+          getBookedDates(id),
+        ]);
+        setBike(bikeData);
+        setBookedDates(bookedData);
       } catch (err) {
         setError('Failed to load bike details.');
         console.error(err);
@@ -48,7 +59,7 @@ export default function BikeDetailPage() {
       }
     }
 
-    fetchBike();
+    fetchData();
   }, [params.id]);
 
   // Calculate total price
@@ -59,6 +70,32 @@ export default function BikeDetailPage() {
     const hours = Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60)));
     return bike.price * hours;
   };
+
+  // Check if selected dates conflict with existing bookings
+  const checkDateConflict = (start: string, end: string): boolean => {
+    if (!start || !end) return false;
+
+    const selectedStart = new Date(start);
+    const selectedEnd = new Date(end);
+
+    return bookedDates.some(booking => {
+      const bookingStart = new Date(booking.startDate);
+      const bookingEnd = new Date(booking.endDate);
+
+      // Check for overlap
+      return selectedStart <= bookingEnd && selectedEnd >= bookingStart;
+    });
+  };
+
+  // Update conflict state when dates change
+  useEffect(() => {
+    if (startDate && endDate) {
+      const hasConflict = checkDateConflict(startDate, endDate);
+      setDateConflict(hasConflict);
+    } else {
+      setDateConflict(false);
+    }
+  }, [startDate, endDate, bookedDates]);
 
   const totalPrice = calculateTotal();
 
@@ -269,6 +306,21 @@ export default function BikeDetailPage() {
                       />
                     </div>
 
+                    {/* Conflict Warning */}
+                    {dateConflict && (
+                      <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-4">
+                        <div className="flex items-start gap-3">
+                          <span className="text-xl">⚠️</span>
+                          <div className="flex-1">
+                            <p className="font-semibold text-destructive">日期冲突</p>
+                            <p className="text-sm text-destructive/80 mt-1">
+                              您选择的日期已被预订，请选择其他日期。
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Pickup Location */}
                     <div className="space-y-2">
                       <Label htmlFor="location">
@@ -352,9 +404,9 @@ export default function BikeDetailPage() {
                       className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
                       size="lg"
                       onClick={handleConfirmBooking}
-                      disabled={submitting}
+                      disabled={submitting || dateConflict}
                     >
-                      {submitting ? '提交中...' : `确认预订 ¥${totalPrice}`}
+                      {submitting ? '提交中...' : dateConflict ? '日期冲突，无法预订' : `确认预订 ¥${totalPrice}`}
                     </Button>
 
                     <p className="text-xs text-muted-foreground text-center">

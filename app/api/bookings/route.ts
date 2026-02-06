@@ -1,16 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-// GET /api/bookings - Get all bookings or filter by email
+// GET /api/bookings - Get all bookings or filter by userId/email
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
+    const userId = searchParams.get('userId');
     const email = searchParams.get('email');
     const status = searchParams.get('status');
 
     const where: any = {};
 
-    if (email) {
+    if (userId) {
+      where.userId = userId;
+    } else if (email) {
       where.customerEmail = email;
     }
 

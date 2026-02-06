@@ -73,6 +73,18 @@ export async function getBike(id: string): Promise<Bike> {
   return response.json();
 }
 
+export async function getBookedDates(bikeId: string): Promise<Array<{ startDate: string; endDate: string }>> {
+  const response = await fetch(`${API_BASE}/api/bikes/${bikeId}/booked-dates`, {
+    cache: 'no-store',
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch booked dates');
+  }
+
+  return response.json();
+}
+
 // Bookings API
 export async function createBooking(data: {
   bikeId: string;
@@ -103,10 +115,12 @@ export async function createBooking(data: {
 }
 
 export async function getBookings(params?: {
+  userId?: string;
   email?: string;
   status?: string;
 }): Promise<Booking[]> {
   const searchParams = new URLSearchParams();
+  if (params?.userId) searchParams.append('userId', params.userId);
   if (params?.email) searchParams.append('email', params.email);
   if (params?.status) searchParams.append('status', params.status);
 
