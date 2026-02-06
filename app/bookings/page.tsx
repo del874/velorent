@@ -158,8 +158,11 @@ export default function BookingsPage() {
                 const canCancel = ['pending', 'confirmed'].includes(status);
 
                 return (
-                  <Card key={booking.id}>
-                    <CardContent className="p-6">
+                  <Card key={booking.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+                    <CardContent
+                      className="p-6"
+                      onClick={() => router.push(`/bookings/${booking.id}`)}
+                    >
                       <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
                         {/* Left: Bike Info */}
                         <div className="flex-1">
@@ -174,6 +177,7 @@ export default function BookingsPage() {
                                 <Badge className={config.className}>{config.label}</Badge>
                               </div>
                               <p className="text-sm text-muted-foreground">{booking.bike.description}</p>
+                              <p className="mt-2 text-xs text-primary">点击查看详情 →</p>
                             </div>
                           </div>
 
@@ -216,7 +220,10 @@ export default function BookingsPage() {
                             <Button
                               variant="outline"
                               size="default"
-                              onClick={() => router.push(`/bikes/${booking.bike.id}`)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                router.push(`/bikes/${booking.bike.id}`);
+                              }}
                             >
                               再次预订
                             </Button>
@@ -224,7 +231,10 @@ export default function BookingsPage() {
                               <Button
                                 variant="destructive"
                                 size="default"
-                                onClick={() => handleCancelBooking(booking.id)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCancelBooking(booking.id);
+                                }}
                                 disabled={cancellingId === booking.id}
                               >
                                 {cancellingId === booking.id ? '取消中...' : '取消预订'}

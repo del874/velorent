@@ -114,7 +114,7 @@ export default function BikeDetailPage() {
 
     try {
       setSubmitting(true);
-      await createBooking({
+      const newBooking = await createBooking({
         bikeId: bike.id,
         startDate: new Date(startDate).toISOString(),
         endDate: new Date(endDate).toISOString(),
@@ -127,10 +127,9 @@ export default function BikeDetailPage() {
         userId: user.userId,
       });
 
-      alert(`预订成功！\n\n车型: ${bike.name}\n取车时间: ${startDate}\n还车时间: ${endDate}\n取车地点: ${pickupLocation}\n总价: ¥${totalPrice}`);
-
+      // Clear cart and redirect to booking confirmation page
       clearCart();
-      router.push('/bikes');
+      router.push(`/bookings/${newBooking.id}?confirmed=true`);
     } catch (err: any) {
       alert(err.message || '预订失败，请重试');
     } finally {
