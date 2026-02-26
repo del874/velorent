@@ -9,6 +9,7 @@ export interface JWTPayload {
   userId: string;
   email: string;
   name: string;
+  phone?: string;
   iat?: number;
   exp?: number;
 }

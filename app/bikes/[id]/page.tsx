@@ -51,6 +51,13 @@ export default function BikeDetailPage() {
         ]);
         setBike(bikeData);
         setBookedDates(bookedData);
+
+        // Auto-fill user information if logged in
+        if (user) {
+          setCustomerName(user.name || '');
+          setCustomerEmail(user.email || '');
+          setCustomerPhone(user.phone || '');
+        }
       } catch (err) {
         setError('Failed to load bike details.');
         console.error(err);
@@ -60,7 +67,7 @@ export default function BikeDetailPage() {
     }
 
     fetchData();
-  }, [params.id]);
+  }, [params.id, user]);
 
   // Calculate total price
   const calculateTotal = () => {

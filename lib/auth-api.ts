@@ -90,10 +90,94 @@ export async function getCurrentUser(request: NextRequest): Promise<JWTPayload |
     }
 
     const payload = await verifyToken(token);
-    return payload;
+    if (!payload) {
+      return null;
+    }
+
+    // Fetch full user data from database
+    const user = await prisma.user.findUnique({
+      where: { id: payload.userId },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        phone: true,
+        role: true,
+      },
+    });
+
+    if (!user) {
+      return null;
+    }
+
+    // Return user data with userId matching the JWT payload format
+    return {
+      userId: user.id,
+      email: user.email,
+      name: user.name || '',
+      phone: user.phone,
+    };
   } catch (error) {
     return null;
   }
+}
+
+// Update user profile
+export async function updateUserProfile(userId: string, data: { name?: string; phone?: string }) {
+  // Update user
+  const user = await prisma.user.update({
+    where: { id: userId },
+    data: {
+      ...(data.name !== undefined && { name: data.name }),
+      ...(data.phone !== undefined && { phone: data.phone }),
+    },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      phone: true,
+      role: true,
+    },
+  });
+
+  return user;
+}
+
+// Change password
+export async function changePassword(userId: string, oldPassword: string, newPassword: string) {
+  // Get user with password
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      password: true,
+    },
+  });
+
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  // Verify old password
+  if (!user.password) {
+    throw new Error('Password not set');
+  }
+
+  const isValidPassword = await bcrypt.compare(oldPassword, user.password);
+  if (!isValidPassword) {
+    throw new Error('Incorrect password');
+  }
+
+  // Hash new password
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+  // Update password
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      password: hashedPassword,
+    },
+  });
 }
 
 // Helper to get cookies

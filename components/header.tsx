@@ -51,6 +51,9 @@ export function Header() {
               <DropdownMenuLabel>我的账号</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
+                <Link href="/profile">个人中心</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
                 <Link href="/bookings">我的预订</Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />

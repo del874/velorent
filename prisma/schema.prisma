@@ -29,6 +29,8 @@ model Bike {
 
 model Booking {
   id              String   @id @default(cuid())
+  userId          String?
+  user            User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   bikeId          String
   bike            Bike     @relation(fields: [bikeId], references: [id])
   startDate       DateTime
@@ -49,8 +51,10 @@ model User {
   id        String   @id @default(cuid())
   email     String   @unique
   name      String?
+  phone     String?
   password  String?
   role      String   @default("user")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  bookings  Booking[]
 }

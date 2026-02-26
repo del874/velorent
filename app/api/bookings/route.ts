@@ -25,6 +25,14 @@ export async function GET(request: NextRequest) {
       where,
       include: {
         bike: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+          },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -106,6 +114,14 @@ export async function POST(request: NextRequest) {
       },
       include: {
         bike: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+          },
+        },
       },
     });
 

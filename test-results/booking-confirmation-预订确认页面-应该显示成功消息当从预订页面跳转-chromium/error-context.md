@@ -1,0 +1,77 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - link "🚴 VeloRent" [ref=e4] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e5]: 🚴
+        - generic [ref=e6]: VeloRent
+      - navigation [ref=e7]:
+        - link "首页" [ref=e8] [cursor=pointer]:
+          - /url: /
+        - link "车型列表" [ref=e9] [cursor=pointer]:
+          - /url: /bikes
+        - link "如何运作" [ref=e10] [cursor=pointer]:
+          - /url: /how-it-works
+        - link "价格方案" [ref=e11] [cursor=pointer]:
+          - /url: /pricing
+      - button "Test User" [ref=e13]
+    - main [ref=e14]:
+      - generic [ref=e15]:
+        - heading "未找到该车型" [level=1] [ref=e16]
+        - link "返回车型列表" [ref=e17] [cursor=pointer]:
+          - /url: /bikes
+    - contentinfo [ref=e18]:
+      - generic [ref=e19]:
+        - generic [ref=e20]:
+          - generic [ref=e21]:
+            - generic [ref=e22]: 🚴
+            - heading "VeloRent" [level=2] [ref=e23]
+          - paragraph [ref=e24]: 自2021年起，致力于让城市交通更清洁、更健康、更有趣。
+        - generic [ref=e25]:
+          - generic [ref=e26]:
+            - heading "公司" [level=4] [ref=e27]
+            - link "关于我们" [ref=e28] [cursor=pointer]:
+              - /url: /about
+            - link "加入我们" [ref=e29] [cursor=pointer]:
+              - /url: /careers
+            - link "新闻动态" [ref=e30] [cursor=pointer]:
+              - /url: /news
+          - generic [ref=e31]:
+            - heading "产品" [level=4] [ref=e32]
+            - link "价格" [ref=e33] [cursor=pointer]:
+              - /url: /pricing
+            - link "站点分布" [ref=e34] [cursor=pointer]:
+              - /url: /locations
+            - link "下载App" [ref=e35] [cursor=pointer]:
+              - /url: /app
+          - generic [ref=e36]:
+            - heading "支持" [level=4] [ref=e37]
+            - link "帮助中心" [ref=e38] [cursor=pointer]:
+              - /url: /help
+            - link "联系我们" [ref=e39] [cursor=pointer]:
+              - /url: /contact
+            - link "安全保障" [ref=e40] [cursor=pointer]:
+              - /url: /safety
+      - generic [ref=e41]:
+        - paragraph [ref=e42]: © 2024 VeloRent Inc. 保留所有权利。
+        - generic [ref=e43]:
+          - link "🌐" [ref=e44] [cursor=pointer]:
+            - /url: "#"
+          - link "💬" [ref=e45] [cursor=pointer]:
+            - /url: "#"
+  - generic [ref=e50] [cursor=pointer]:
+    - button "Open Next.js Dev Tools" [ref=e51]:
+      - img [ref=e52]
+    - generic [ref=e55]:
+      - button "Open issues overlay" [ref=e56]:
+        - generic [ref=e57]:
+          - generic [ref=e58]: "0"
+          - generic [ref=e59]: "1"
+        - generic [ref=e60]: Issue
+      - button "Collapse issues badge" [ref=e61]:
+        - img [ref=e62]
+  - alert [ref=e64]
+```

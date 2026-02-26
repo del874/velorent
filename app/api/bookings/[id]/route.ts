@@ -12,6 +12,14 @@ export async function GET(
       where: { id },
       include: {
         bike: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+          },
+        },
       },
     });
 
@@ -45,6 +53,14 @@ export async function PATCH(
       },
       include: {
         bike: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+          },
+        },
       },
     });
 
