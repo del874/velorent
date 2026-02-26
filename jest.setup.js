@@ -25,8 +25,42 @@ jest.mock('next/headers', () => ({
   cookies: jest.fn(),
 }))
 
+// Mock next/image
+jest.mock('next/image', () => ({
+  __esModule: true,
+  default: () => 'https://via.placeholder.com/150',
+}))
+
+// Mock next/link
+jest.mock('next/link', () => ({
+  __esModule: true,
+  default: ({ children, href, ...props }: any) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
+}))
+
 // Global test setup
 beforeEach(() => {
   // Clear all mocks before each test
   jest.clearAllMocks()
+})
+
+// Suppress console errors during tests
+const originalError = console.error
+beforeAll(() => {
+  console.error = (...args: any[]) => {
+    if (
+      typeof args[0] === 'string' &&
+      args[0].includes('Warning: ReactDOM.render')
+    ) {
+      return
+    }
+    originalError.call(console, ...args)
+  }
+})
+
+afterAll(() => {
+  console.error = originalError
 })
