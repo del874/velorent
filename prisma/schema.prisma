@@ -5,8 +5,12 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// For local development: provider = "sqlite"
+// For production (Supabase/Vercel): provider = "postgresql"
+// Note: DATABASE_URL is configured in prisma.config.ts (Prisma 7+)
 datasource db {
   provider = "sqlite"
+  // provider = "postgresql"
 }
 
 model Bike {
