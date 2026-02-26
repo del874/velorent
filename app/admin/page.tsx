@@ -1,38 +1,60 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Bike, Calendar, Users, TrendingUp } from 'lucide-react'
 
 interface Stats {
   totalBookings: number
-  totalRevenue: number
+  totalUsers: number
   activeUsers: number
+  totalBikes: number
   availableBikes: number
+  totalRevenue: number
+  recentBookings: number
+  statusCounts: Record<string, number>
+  popularBikes: Array<{
+    id: string
+    name: string
+    nameEn: string
+    image: string
+    bookingCount: number
+  }>
 }
 
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState<Stats>({
     totalBookings: 0,
-    totalRevenue: 0,
+    totalUsers: 0,
     activeUsers: 0,
+    totalBikes: 0,
     availableBikes: 0,
+    totalRevenue: 0,
+    recentBookings: 0,
+    statusCounts: {},
+    popularBikes: [],
   })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // TODO: Fetch actual stats from API
-    // For now, using mock data
-    setTimeout(() => {
-      setStats({
-        totalBookings: 156,
-        totalRevenue: 45680,
-        activeUsers: 89,
-        availableBikes: 24,
-      })
-      setLoading(false)
-    }, 500)
+    fetchStats()
   }, [])
+
+  const fetchStats = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch('/api/admin/stats')
+      if (!response.ok) throw new Error('Failed to fetch stats')
+
+      const data = await response.json()
+      setStats(data.stats)
+    } catch (error) {
+      console.error('Error fetching stats:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const statCards = [
     {
@@ -108,33 +130,63 @@ export default function AdminDashboardPage() {
         })}
       </div>
 
+      {/* Booking Status Overview */}
+      <Card>
+        <CardHeader>
+          <CardTitle>预订状态概览</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-5">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-yellow-600">{stats.statusCounts.pending || 0}</p>
+              <p className="text-sm text-muted-foreground">待确认</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-blue-600">{stats.statusCounts.confirmed || 0}</p>
+              <p className="text-sm text-muted-foreground">已确认</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-green-600">{stats.statusCounts.active || 0}</p>
+              <p className="text-sm text-muted-foreground">使用中</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-gray-600">{stats.statusCounts.completed || 0}</p>
+              <p className="text-sm text-muted-foreground">已完成</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-red-600">{stats.statusCounts.cancelled || 0}</p>
+              <p className="text-sm text-muted-foreground">已取消</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Quick Links */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card className="hover:shadow-md transition-shadow cursor-pointer">
+        <Card className="hover:shadow-md transition-shadow">
           <CardHeader>
             <CardTitle>快速操作</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            <a href="/admin/bikes/new" className="block text-sm text-primary hover:underline">
+            <Link href="/admin/bikes/new" className="block text-sm text-primary hover:underline">
               + 添加新车型
-            </a>
-            <a href="/admin/bookings?status=pending" className="block text-sm text-primary hover:underline">
-              查看待处理预订
-            </a>
-            <a href="/admin/users" className="block text-sm text-primary hover:underline">
+            </Link>
+            <Link href="/admin/bookings?status=pending" className="block text-sm text-primary hover:underline">
+              查看待处理预订 ({stats.statusCounts.pending || 0})
+            </Link>
+            <Link href="/admin/users" className="block text-sm text-primary hover:underline">
               管理用户
-            </a>
+            </Link>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>最近活动</CardTitle>
+            <CardTitle>最近7天</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground">
-              功能开发中...
-            </p>
+            <p className="text-3xl font-bold text-primary">{stats.recentBookings}</p>
+            <p className="text-sm text-muted-foreground">新预订</p>
           </CardContent>
         </Card>
 
@@ -150,6 +202,42 @@ export default function AdminDashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Popular Bikes */}
+      {stats.popularBikes.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>热门车型排行</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {stats.popularBikes.map((bike, index) => (
+                <Link
+                  key={bike.id}
+                  href={`/admin/bikes/${bike.id}`}
+                  className="flex items-center gap-4 p-3 rounded-lg hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground font-bold">
+                    {index + 1}
+                  </div>
+                  <div
+                    className="h-12 w-12 rounded bg-cover bg-center"
+                    style={{ backgroundImage: `url(${bike.image})` }}
+                  />
+                  <div className="flex-1">
+                    <p className="font-medium text-foreground">{bike.name}</p>
+                    <p className="text-sm text-muted-foreground">{bike.nameEn}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-bold text-primary">{bike.bookingCount}</p>
+                    <p className="text-xs text-muted-foreground">次预订</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
