@@ -1,5 +1,4 @@
 import { PrismaClient } from '@prisma/client';
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
@@ -9,41 +8,27 @@ let prisma: PrismaClient;
 
 // Detect database type from DATABASE_URL
 const isPostgreSQL = process.env.DATABASE_URL?.startsWith('postgresql://');
+const isProduction = process.env.NODE_ENV === 'production';
 
-if (process.env.NODE_ENV === 'production') {
-  const connectionString = process.env.DATABASE_URL || 'file:./dev.db';
-
-  if (isPostgreSQL) {
-    // Production: Use PostgreSQL (Supabase)
-    prisma = new PrismaClient({
-      datasources: {
-        db: {
-          url: connectionString,
-        },
-      },
-    });
-  } else {
-    // Production: Use SQLite (if DATABASE_URL is not PostgreSQL)
-    const adapter = new PrismaBetterSqlite3({ url: connectionString });
-    prisma = new PrismaClient({ adapter });
-  }
+if (isProduction && isPostgreSQL) {
+  // Production with PostgreSQL (Vercel + Supabase)
+  prisma = new PrismaClient();
+} else if (isProduction && !isPostgreSQL) {
+  // Production with SQLite (not recommended)
+  prisma = new PrismaClient();
 } else {
   // Development: Reuse PrismaClient instance
   if (!globalForPrisma.prisma) {
-    const connectionString = process.env.DATABASE_URL || 'file:./dev.db';
-
     if (isPostgreSQL) {
-      // Development with PostgreSQL (optional, for testing)
-      prisma = new PrismaClient({
-        datasources: {
-          db: {
-            url: connectionString,
-          },
-        },
-      });
+      // Development with PostgreSQL (for testing)
+      prisma = new PrismaClient();
     } else {
       // Development with SQLite (default)
-      const adapter = new PrismaBetterSqlite3({ url: connectionString });
+      // Dynamically import adapter only for development
+      const { PrismaBetterSqlite3 } = require('@prisma/adapter-better-sqlite3');
+      const adapter = new PrismaBetterSqlite3({
+        url: process.env.DATABASE_URL || 'file:./dev.db',
+      });
       prisma = new PrismaClient({ adapter });
     }
 
